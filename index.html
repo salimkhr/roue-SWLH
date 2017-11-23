@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-alpha.6/css/bootstrap.min.css" integrity="sha384-rwoIResjU2yc3z8GV/NPeZWAv56rSmLldC3R/AZzGRnGxQQKnKkoFVhFQhNUwEyJ" crossorigin="anonymous">
+    <script src="https://code.jquery.com/jquery-3.1.1.slim.min.js" integrity="sha384-A7FZj7v+d/sdmMqp/nOQwliLvUsJfDHW+k9Omg/a/EheAdgtzNs3hpfag6Ed950n" crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/tether/1.4.0/js/tether.min.js" integrity="sha384-DztdAPBWPRXSA/3eYEEUWrWCy7G5KFbe8fFjk5JAIxUYHKkDx6Qin1DkWx51bBrb" crossorigin="anonymous"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-alpha.6/js/bootstrap.min.js" integrity="sha384-vBWWzlZJ8ea9aCX4pEW3rVHjgjt7zpkNpZk+02D9phzyeVkE+jo0ieGizqPLForn" crossorigin="anonymous"></script>
+
+</head>
+<body id='spin'>
+<canvas id="canvas"width="820" height="820" style="margin-left:14%;"></canvas>
+<audio src="roulette.mp3" id="music"></audio>
+<script>
+    var options=["ApuTicket","predict'it","lc chain","Potatown","MonenK","OhMyBook-family","Havr"];
+    var colors=["red","orange","Aqua","Green","Blue","Indigo","grey"];
+    var startAngle = (Math.random()*2*Math.PI)-Math.PI;
+    var arc = Math.PI / (options.length / 2);
+    var spinTimeout = null;
+
+    var spinArcStart = 10;
+    var spinTime = 0;
+    var spinTimeTotal = 0;
+
+    var ctx;
+
+    $("#spin").click(function(){spin();});
+
+    function byte2Hex(n) {
+        var nybHexString = "0123456789ABCDEF";
+        return String(nybHexString.substr((n >> 4) & 0x0F,1)) + nybHexString.substr(n & 0x0F,1);
+    }
+
+    function RGB2Color(r,g,b) {
+        return '#' + byte2Hex(r) + byte2Hex(g) + byte2Hex(b);
+    }
+
+    function getColor(item, maxitem) {
+        var phase = 0;
+        var center = 128;
+        var width = 127;
+        var frequency = Math.PI*2/maxitem;
+
+        red   = Math.sin(frequency*item+2+phase) * width + center;
+        green = Math.sin(frequency*item+0+phase) * width + center;
+        blue  = Math.sin(frequency*item+4+phase) * width + center;
+
+        return RGB2Color(red,green,blue);
+    }
+
+    function drawRouletteWheel() {
+        var canvas = document.getElementById("canvas");
+        if (canvas.getContext) {
+            var outsideRadius = 300;
+            var textRadius = 250;
+            var insideRadius = 0;
+
+            ctx = canvas.getContext("2d");
+            ctx.clearRect(0,0,900,900);
+
+            ctx.strokeStyle = "black";
+            ctx.lineWidth = 2;
+
+            ctx.font = 'bold 25px Helvetica, Arial';
+
+            for(var i = 0; i < options.length; i++) {
+                var angle = startAngle + i * arc;
+                ctx.fillStyle = colors[i];
+
+                ctx.beginPath();
+                ctx.arc(450, 450, outsideRadius, angle, angle + arc, false);
+                ctx.arc(450, 450, insideRadius, angle + arc, angle, true);
+                ctx.stroke();
+                ctx.fill();
+
+                ctx.save();
+                ctx.shadowOffsetX = -1;
+                ctx.shadowOffsetY = -1;
+                ctx.shadowBlur    = 0;
+                ctx.shadowColor   = "rgb(220,220,220)";
+                ctx.fillStyle = "white";
+                ctx.translate(450 + Math.cos(angle + arc / 2) * textRadius,
+                    450 + Math.sin(angle + arc / 2) * textRadius);
+                ctx.rotate(angle + arc / 2 + Math.PI / 2);
+                var text = options[i];
+                ctx.fillText(text, -ctx.measureText(text).width / 2, 0);
+                ctx.restore();
+            }
+
+            //Arrow
+            ctx.fillStyle = "Silver";
+            ctx.beginPath();
+            ctx.moveTo(450 - 8, 450 - (outsideRadius + 10));
+            ctx.lineTo(450 + 8, 450 - (outsideRadius + 10));
+            ctx.lineTo(450 + 8, 450 - (outsideRadius - 10));
+            ctx.lineTo(450 + 18, 450 - (outsideRadius - 10));
+            ctx.lineTo(450 + 0, 450 - (outsideRadius - 26));
+            ctx.lineTo(450 - 18, 450 - (outsideRadius - 10));
+            ctx.lineTo(450 - 8, 450 - (outsideRadius - 10));
+            ctx.lineTo(450 - 8, 450 - (outsideRadius + 10));
+            ctx.fill();
+        }
+    }
+
+    function spin() {
+        $("#music")[0].play();
+        spinAngleStart = Math.random() * 10 + 10;
+        spinTime = 0;
+        spinTimeTotal = Math.random() * 3 + 10 * 1000;
+        rotateWheel();
+    }
+
+    function rotateWheel() {
+        spinTime += 30;
+        if(spinTime >= spinTimeTotal) {
+            stopRotateWheel();
+            return;
+        }
+        var spinAngle = spinAngleStart - easeOut(spinTime, 0, spinAngleStart, spinTimeTotal);
+        startAngle += (spinAngle * Math.PI / 180);
+        drawRouletteWheel();
+        spinTimeout = setTimeout('rotateWheel()', 30);
+    }
+
+    function stopRotateWheel() {
+        clearTimeout(spinTimeout);
+        var degrees = startAngle * 180 / Math.PI + 90;
+        var arcd = arc * 180 / Math.PI;
+        var index = Math.floor((360 - degrees % 360) / arcd);
+        ctx.save();
+        ctx.font = 'bold 70px Helvetica, Arial';
+        ctx.fillStyle="white";
+        var text = options[index];
+        for(var i = options.length-1; i--;){
+            if (i === index) {options.splice(i, 1);colors.splice(i, 1);}
+        }
+        arc = Math.PI / (options.length / 2);
+        console.log(options);
+        ctx.fillText(text, 450 - ctx.measureText(text).width / 2, 450 + 10);
+        ctx.restore();
+        $("#music")[0].stop();
+    }
+
+    function easeOut(t, b, c, d) {
+        var ts = (t/=d)*t;
+        var tc = ts*t;
+        return b+c*(tc + -3*ts + 3*t);
+    }
+
+    drawRouletteWheel();
+</script>
+</body>
+</html>
