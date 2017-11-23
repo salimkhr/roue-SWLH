@@ -25,4 +25,4 @@ la derniére valeur pour la mettre la durée en milliseconde. (`1000`)
 
 Pour lancer la roue il suffit de cliquer sur l'écran.
 A la fin de la rotation, le nom de l'équipe va apparaitre.
-il suffit de recliquer sur l'écran pour relancer la roue sans l'équipe selectionné
+il suffit de recliquer sur l'écran pour relancer la roue sans l'équipe précédamment sélectionné
