@@ -10,6 +10,7 @@ Pour définir la couleur de chaque equipes il faut modifier le contenu du tablea
 var colors=["red","orange","Aqua","Green","Blue","Indigo","grey"];
 ```
 les couleurs peuvent etre definit en rgb (#ab1245)
+
 L'ordre des couleurs est lié a l'ordre des équipes. ("ApuTicket" sera rouge ...)
 
 **La durée**
